@@ -1,0 +1,4 @@
+main: org.goblom.injector.InjectorPlugin
+name: Injector
+version: 1.0
+author: Goblom
