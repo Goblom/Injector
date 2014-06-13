@@ -56,7 +56,7 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
     
     @Override
     public void onEnable() {
-//        saveResource("InjectorHelp.txt", true);
+        saveResource("InjectorHelp.txt", true);
         
         try {
             Metrics met = new Metrics(this);
