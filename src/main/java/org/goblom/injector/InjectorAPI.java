@@ -9,6 +9,7 @@ package org.goblom.injector;
 import java.io.File;
 import java.util.List;
 import java.util.logging.Logger;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginLoader;
 import org.goblom.injector.inject.Injectable;
 import org.goblom.injector.inject.Unloadable;
@@ -34,4 +35,6 @@ public interface InjectorAPI {
     public <T extends Injectable> T getInjectable(String name);
     
     public PluginLoader getInjectablePluginLoader();
+    
+    public Plugin getBukkit();
 }

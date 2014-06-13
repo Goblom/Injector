@@ -18,10 +18,12 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.goblom.injector.data.ReflectCommand;
@@ -53,6 +55,7 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
     
     @Override
     public void onEnable() {
+        saveResource("InjectorHelp.txt", true);
         this.ipl = new InjectorPluginLoader(this);
         try {
             final Field commandMap = Bukkit.getServer().getClass().getDeclaredField("commandMap");
@@ -75,27 +78,14 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
         
         getServer().getPluginManager().registerEvents(new Listener() {
             @EventHandler
-            public void onPluginCommand(PlayerCommandPreprocessEvent event) {
+            public void onPluginCommand(final PlayerCommandPreprocessEvent event) {
                 if (event.getMessage().startsWith("/pl") || event.getMessage().startsWith("/plugins")) {
-                    StringBuilder sb = new StringBuilder("Injected ([size]): ");
-                    int counter = 0;
-                    for (Injectable i : getInjected()) {
-                        if (i instanceof InjectablePlugin) {
-                            InjectablePlugin plugin = (InjectablePlugin) i;
-                            sb.append(plugin.isEnabled() ? ChatColor.GREEN : ChatColor.RED);
-                            sb.append(plugin.getDescription().getName());
-                            sb.append(ChatColor.WHITE).append(", ");
-                            counter++;
+                    Bukkit.getScheduler().runTaskLater(getBukkit(), new Runnable() {
+                        @Override
+                        public void run() {
+                            sendInjectedPlugins(event.getPlayer());
                         }
-                    }
-                    
-                    String toSend = sb.toString();
-                    
-                    if (toSend.endsWith(", ")) {
-                        toSend = toSend.substring(0, toSend.length() - 2);
-                    }
-                    
-                    event.getPlayer().sendMessage(toSend.replace("[size]", String.valueOf(counter)));
+                    }, 5L);
                 }
             }
         }, this);
@@ -113,6 +103,7 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
             }
             
             i.setInjected(false);
+            injected.remove(i);
         }
     }
     public CommandMap getCommandMap() {
@@ -375,6 +366,14 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                             } catch (Exception e) {}
                         }
                         break;
+                    case "pl":
+                    case "plugins":
+                        if (sender instanceof Player) {
+                            sendInjectedPlugins((Player) sender);
+                        } else {
+                            sendMessage(sender, "This only supports players for now.");
+                        }
+                        break;
                     default:
                         sendMessage(sender, "command usage goes here");
                         break;
@@ -393,5 +392,32 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
     @Override
     public PluginLoader getInjectablePluginLoader() {
         return ipl;
+    }
+    
+    private void sendInjectedPlugins(Player player) {
+        StringBuilder sb = new StringBuilder("Injected ([size]): ");
+        int counter = 0;
+        for (Injectable i : getInjected()) {
+            if (i instanceof InjectablePlugin) {
+                InjectablePlugin plugin = (InjectablePlugin) i;
+                sb.append(plugin.isEnabled() ? ChatColor.GREEN : ChatColor.RED);
+                sb.append(plugin.getDescription().getName());
+                sb.append(ChatColor.WHITE).append(", ");
+                counter++;
+            }
+        }
+
+        String toSend = sb.toString();
+
+        if (toSend.endsWith(", ")) {
+            toSend = toSend.substring(0, toSend.length() - 2);
+        }
+
+        player.sendMessage(toSend.replace("[size]", String.valueOf(counter)));
+    }
+
+    @Override
+    public Plugin getBukkit() {
+        return this;
     }
 }

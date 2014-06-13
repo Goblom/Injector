@@ -1,0 +1,10 @@
+--------------------------------
+Injector Help
+--------------------------------
+
+Injector is not exactly meant for server owners, but it helps server owners tailor their server without massive amounts of plugins.
+
+Injector can inject class files into bukkit, this being commands or plugins. The plugin run faster* and the commands are easier to manage.
+
+--------------
+More soon
