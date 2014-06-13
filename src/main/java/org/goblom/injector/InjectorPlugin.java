@@ -114,10 +114,6 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                 HandlerList.unregisterAll((Listener) i);
             }
             
-            if (i instanceof Unloadable) {
-                ((Unloadable) i).onUnload();
-            }
-            
             i.setInjected(false);
         }
     }
@@ -143,8 +139,11 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                     
                     if (!pie.isCancelled()) {
                         InjectablePlugin ip = pie.getInjectedPlugin();
-                        ip.setInjected(true);                
-                        ip.onInject();
+                        try {
+                            ip.setInjected(true);
+                        } catch (Throwable t) {
+                            t.printStackTrace();
+                        }                
                         
                         ip.getPluginLoader().enablePlugin(ip);
 //                        Bukkit.getPluginManager().enablePlugin(ip);
@@ -187,9 +186,12 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                         }
                         
                         getCommandMap().register("injector", cmd);
-                        ic.onInject();
-                        ic.setInjected(true);
                         
+                        try {
+                            ic.setInjected(true);
+                        } catch (Throwable t) {
+                            t.printStackTrace();
+                        }
                         injected.add(ic);
                         return true;
                     } else return false;
@@ -201,7 +203,11 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                     if (!ie.isCancelled()) {
                         Injectable ij = ie.getInjected();
                         
-                        ij.setInjected(true);
+                        try {
+                            ij.setInjected(true);
+                        } catch (Throwable t) {
+                            t.printStackTrace();
+                        }
                     } else return false;
                 }
             } catch (Exception e) {

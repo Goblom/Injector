@@ -7,6 +7,7 @@
 package org.goblom.injector;
 
 import java.io.File;
+import java.util.List;
 import java.util.logging.Logger;
 import org.bukkit.plugin.PluginLoader;
 import org.goblom.injector.inject.Injectable;
@@ -36,6 +37,10 @@ public class Injector {
     
     public static Logger getLogger() {
         return api.getLogger();
+    }
+    
+    public static List<Injectable> getInjected() {
+        return api.getInjected();
     }
     
     public static PluginLoader getInjectablePluginLoader() {

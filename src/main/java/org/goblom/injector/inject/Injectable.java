@@ -18,7 +18,15 @@ public abstract class Injectable {
     public abstract void onInject();
     
     public final void setInjected(boolean injected) {
-        this.isInjected = injected;
+        if (isInjected != injected) {
+            this.isInjected = injected;
+            
+            if (isInjected()) {
+                onInject();
+            } else if (this instanceof Unloadable) {
+                ((Unloadable) this).onUnload();
+            }
+        }        
     }
     
     public final boolean isInjected() {
