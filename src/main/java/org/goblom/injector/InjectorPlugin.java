@@ -387,6 +387,8 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                         sendMessage(sender, "command usage goes here");
                         break;
                 }
+            } else {
+                sendMessage(sender, ChatColor.RED + "command usage goes here");
             }
         } else {
             sendMessage(sender, ChatColor.RED + "You do not have permission to use that command.");
