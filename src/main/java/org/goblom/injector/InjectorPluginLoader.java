@@ -180,7 +180,7 @@ public class InjectorPluginLoader implements PluginLoader {
         Validate.isTrue(plugin instanceof InjectablePlugin, "Plugin is not associated with this PluginLoader");
         
         if (!plugin.isEnabled()) {
-            plugin.getLogger().info("Enabling InjectedPlugin " + plugin.getName());
+            plugin.getLogger().info("Injecting plugin " + plugin.getName());
             
             InjectablePlugin iPlugin = (InjectablePlugin) plugin;
             
@@ -194,7 +194,7 @@ public class InjectorPluginLoader implements PluginLoader {
                 iPlugin.setEnabled(true);
             } catch (Throwable e) {
                 e.printStackTrace();
-                this.plugin.getLogger().log(Level.SEVERE, "Error occurred while enabling InjectedPlugin " + plugin.getName());
+                this.plugin.getLogger().log(Level.SEVERE, "Error while injecting " + plugin.getName());
             }
             
             Bukkit.getPluginManager().callEvent(new PluginEnableEvent(plugin));
