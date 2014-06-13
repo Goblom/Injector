@@ -208,7 +208,7 @@ public abstract class InjectablePlugin extends Configable implements Plugin {
     
     @Override
     public final String getName() {
-        return getDescription().getName() + "-Injected";
+        return getDescription().getName();
     }
     
     protected void installDDL() {
