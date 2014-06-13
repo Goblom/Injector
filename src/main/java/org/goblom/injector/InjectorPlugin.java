@@ -6,7 +6,6 @@
 
 package org.goblom.injector;
 
-import test.TestPlugin;
 import com.google.common.collect.Lists;
 import java.io.File;
 import java.lang.reflect.Field;
@@ -73,7 +72,6 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                                    
                                    commandFactory.register();
         load();
-        tests();
         
         getServer().getPluginManager().registerEvents(new Listener() {
             @EventHandler
@@ -321,10 +319,6 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                 e.printStackTrace();
             }
         }
-    }
-    
-    public void tests() {
-        inject(TestPlugin.class);
     }
     
     @Override
