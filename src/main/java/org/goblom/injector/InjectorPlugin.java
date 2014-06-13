@@ -94,7 +94,7 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                         public void run() {
                             sendInjectedPlugins(event.getPlayer());
                         }
-                    }, 5L);
+                    }, 1L);
                 }
             }
         }, this);
