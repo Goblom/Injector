@@ -8,6 +8,7 @@ package org.goblom.injector;
 
 import com.google.common.collect.Lists;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -56,6 +57,14 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
     @Override
     public void onEnable() {
         saveResource("InjectorHelp.txt", true);
+        
+        try {
+            Metrics met = new Metrics(this);
+            met.start();
+        } catch (IOException e) {
+            getLogger().info("Metrics will not be tracked this time :(");
+        }
+        
         this.ipl = new InjectorPluginLoader(this);
         try {
             final Field commandMap = Bukkit.getServer().getClass().getDeclaredField("commandMap");
