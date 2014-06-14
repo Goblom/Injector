@@ -13,6 +13,7 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -102,7 +103,11 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
     
     @Override
     public void onDisable() {
-        for (Injectable i : getInjected()) {
+        Iterator<Injectable> it = injected.iterator();
+        
+        while (it.hasNext()) {
+            Injectable i = it.next();
+            
             if (i instanceof InjectablePlugin) {
                 getInjectablePluginLoader().disablePlugin((InjectablePlugin) i);
             }
@@ -111,8 +116,13 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                 HandlerList.unregisterAll((Listener) i);
             }
             
-            i.setInjected(false);
-            injected.remove(i);
+            try {
+                i.setInjected(false);
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+            
+            it.remove();
         }
     }
     public CommandMap getCommandMap() {
