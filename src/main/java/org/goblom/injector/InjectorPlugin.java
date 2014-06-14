@@ -93,7 +93,7 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                     Bukkit.getScheduler().runTaskLater(getBukkit(), new Runnable() {
                         @Override
                         public void run() {
-                            sendInjectedPlugins(event.getPlayer());
+                            event.getPlayer().sendMessage(getInjectedPluginMessage());
                         }
                     }, 1L);
                 }
@@ -387,11 +387,7 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                         break;
                     case "pl":
                     case "plugins":
-                        if (sender instanceof Player) {
-                            sendInjectedPlugins((Player) sender);
-                        } else {
-                            sendMessage(sender, "This only supports players for now.");
-                        }
+                        sendMessage(sender, getInjectedPluginMessage());
                         break;
                     default:
                         sendMessage(sender, "command usage goes here");
@@ -414,10 +410,16 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
     public InjectorPluginLoader getInjectablePluginLoader() {
         return ipl;
     }
+
+    @Override
+    public Plugin getBukkit() {
+        return this;
+    }
     
-    private void sendInjectedPlugins(Player player) {
+    public String getInjectedPluginMessage() {
         StringBuilder sb = new StringBuilder("Injected ([size]): ");
         int counter = 0;
+        
         for (Injectable i : getInjected()) {
             if (i instanceof InjectablePlugin) {
                 InjectablePlugin plugin = (InjectablePlugin) i;
@@ -427,18 +429,13 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                 counter++;
             }
         }
-
+        
         String toSend = sb.toString();
-
+        
         if (toSend.endsWith(", ")) {
             toSend = toSend.substring(0, toSend.length() - 2);
         }
-
-        player.sendMessage(toSend.replace("[size]", String.valueOf(counter)));
-    }
-
-    @Override
-    public Plugin getBukkit() {
-        return this;
+        
+        return toSend.replace("[size]", String.valueOf(counter));
     }
 }
