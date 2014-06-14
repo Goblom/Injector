@@ -34,7 +34,7 @@ public interface InjectorAPI {
     
     public <T extends Injectable> T getInjectable(String name);
     
-    public PluginLoader getInjectablePluginLoader();
+    public InjectorPluginLoader getInjectablePluginLoader();
     
     public Plugin getBukkit();
 }

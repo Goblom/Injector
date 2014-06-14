@@ -401,7 +401,7 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
     }
 
     @Override
-    public PluginLoader getInjectablePluginLoader() {
+    public InjectorPluginLoader getInjectablePluginLoader() {
         return ipl;
     }
     
