@@ -223,7 +223,7 @@ public abstract class InjectablePlugin extends Configable implements Plugin {
         gen.runScript(true, gen.generateDropDdl());
     }
     
-    public void init(InjectorClassLoader classLoader, InjectorPluginLoader loader) {
+    public final void init(InjectorClassLoader classLoader, InjectorPluginLoader loader) {
         if (this.classLoader != null && this.pluginLoader != null || isEnabled()) {
             return;
         }
