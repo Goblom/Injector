@@ -87,20 +87,6 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                                    
                                    commandFactory.register();
         load();
-        
-        getServer().getPluginManager().registerEvents(new Listener() {
-            @EventHandler
-            public void onPluginCommand(final PlayerCommandPreprocessEvent event) {
-                if (event.getMessage().startsWith("/pl") || event.getMessage().startsWith("/plugins")) {
-                    Bukkit.getScheduler().runTaskLater(getBukkit(), new Runnable() {
-                        @Override
-                        public void run() {
-                            event.getPlayer().sendMessage(getInjectedPluginMessage());
-                        }
-                    }, 1L);
-                }
-            }
-        }, this);
     }
     
     @Override
@@ -398,10 +384,6 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                             } catch (Exception e) {}
                         }
                         break;
-                    case "pl":
-                    case "plugins":
-                        sendMessage(sender, getInjectedPluginMessage());
-                        break;
                     default:
                         sendMessage(sender, "command usage goes here");
                         break;
@@ -422,28 +404,5 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
     @Override
     public Plugin getBukkit() {
         return this;
-    }
-    
-    public String getInjectedPluginMessage() {
-        StringBuilder sb = new StringBuilder("Injected ([size]): ");
-        int counter = 0;
-        
-        for (Injectable i : getInjected()) {
-            if (i instanceof InjectablePlugin) {
-                InjectablePlugin plugin = (InjectablePlugin) i;
-                sb.append(plugin.isEnabled() ? ChatColor.GREEN : ChatColor.RED);
-                sb.append(plugin.getDescription().getName());
-                sb.append(ChatColor.WHITE).append(", ");
-                counter++;
-            }
-        }
-        
-        String toSend = sb.toString();
-        
-        if (toSend.endsWith(", ")) {
-            toSend = toSend.substring(0, toSend.length() - 2);
-        }
-        
-        return toSend.replace("[size]", String.valueOf(counter));
     }
 }
