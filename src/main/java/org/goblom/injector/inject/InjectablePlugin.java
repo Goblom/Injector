@@ -27,39 +27,36 @@ import org.bukkit.plugin.PluginLoader;
 import org.goblom.injector.Injector;
 import org.goblom.injector.InjectorAPI;
 import org.goblom.injector.factory.PluginDescriptionFactory;
+import org.goblom.injector.plugin.InjectorClassLoader;
+import org.goblom.injector.plugin.InjectorPluginLoader;
 
 /**
  *
  * @author Goblom
  */
 public abstract class InjectablePlugin extends Configable implements Plugin {
-
+    
+    private InjectorPluginLoader pluginLoader;
+    private InjectorClassLoader classLoader;
+    
     private boolean naggable, enabled;
     
     private EbeanServer ebean;
     private PluginDescriptionFile description;
     
+    //TODO
     public InjectablePlugin() { 
-        if (getDescription().isDatabaseEnabled()) {
-            ServerConfig db = new ServerConfig();
-            
-            db.setDefaultServer(false);
-            db.setRegister(false);
-            db.setClasses(getDatabaseClasses());
-            db.setName(getDescription().getName());
-            getServer().configureDbConfig(db);
-            
-            DataSourceConfig ds = db.getDataSourceConfig();
-            
-            ds.setUrl(replaceDatabaseString(ds.getUrl()));
-            getDataFolder().mkdirs();
-            
-            ClassLoader previous = Thread.currentThread().getContextClassLoader();
-            
-            Thread.currentThread().setContextClassLoader(previous);
-            this.ebean = EbeanServerFactory.create(db);
-            Thread.currentThread().setContextClassLoader(previous);
-        }
+//        final ClassLoader classLoader = getClass().getClassLoader();
+//        
+//        if (!(classLoader instanceof InjectorClassLoader)) {
+//            throw new IllegalStateException("InjectablePlugin requires " + InjectorClassLoader.class.getName());
+//        }
+//        
+//        ((InjectorClassLoader) classLoader).initialize(this);
+    }
+    
+    public ClassLoader getClassLoader() {
+        return classLoader;
     }
     
     @Override
@@ -109,7 +106,7 @@ public abstract class InjectablePlugin extends Configable implements Plugin {
 
     @Override
     public final PluginLoader getPluginLoader() {
-        return getInjector().getInjectablePluginLoader();
+        return pluginLoader;
     }
     
     public final InjectorAPI getInjector() {
@@ -162,6 +159,7 @@ public abstract class InjectablePlugin extends Configable implements Plugin {
         return ebean;
     }
 
+    @Deprecated
     @Override
     public ChunkGenerator getDefaultWorldGenerator(String string, String string1) {
         return null;
@@ -223,5 +221,35 @@ public abstract class InjectablePlugin extends Configable implements Plugin {
         DdlGenerator gen = serv.getDdlGenerator();
 
         gen.runScript(true, gen.generateDropDdl());
+    }
+    
+    public void init(InjectorClassLoader classLoader, InjectorPluginLoader loader) {
+        if (this.classLoader != null && this.pluginLoader != null || isEnabled()) {
+            return;
+        }
+        
+        this.classLoader = classLoader;
+        this.pluginLoader = loader;
+        
+        if (getDescription().isDatabaseEnabled()) {
+            ServerConfig db = new ServerConfig();
+            
+            db.setDefaultServer(false);
+            db.setRegister(false);
+            db.setClasses(getDatabaseClasses());
+            db.setName(getDescription().getName());
+            getServer().configureDbConfig(db);
+            
+            DataSourceConfig ds = db.getDataSourceConfig();
+            
+            ds.setUrl(replaceDatabaseString(ds.getUrl()));
+            getDataFolder().mkdirs();
+            
+            ClassLoader previous = Thread.currentThread().getContextClassLoader();
+            
+            Thread.currentThread().setContextClassLoader(previous);
+            this.ebean = EbeanServerFactory.create(db);
+            Thread.currentThread().setContextClassLoader(previous);
+        }
     }
 }

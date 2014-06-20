@@ -6,6 +6,7 @@
 
 package org.goblom.injector;
 
+import org.goblom.injector.plugin.InjectorPluginLoader;
 import com.google.common.collect.Lists;
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +49,6 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
 
     private List<Injectable> injected = Lists.newArrayList();
     private CommandMap commandMap = null;
-    private InjectorPluginLoader ipl;
     
     @Override
     public void onLoad() {
@@ -58,6 +58,7 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
     @Override
     public void onEnable() {
         saveResource("InjectorHelp.txt", true);
+        saveResource("TestPlugin.class", true);
         
         try {
             Metrics met = new Metrics(this);
@@ -66,7 +67,8 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
             getLogger().info("Metrics will not be tracked this time :(");
         }
         
-        this.ipl = new InjectorPluginLoader(this);
+        Bukkit.getPluginManager().registerInterface(InjectorPluginLoader.class);
+        
         try {
             final Field commandMap = Bukkit.getServer().getClass().getDeclaredField("commandMap");
                         commandMap.setAccessible(true);
@@ -109,7 +111,7 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
             Injectable i = it.next();
             
             if (i instanceof InjectablePlugin) {
-                getInjectablePluginLoader().disablePlugin((InjectablePlugin) i);
+                Bukkit.getPluginManager().disablePlugin((InjectablePlugin) i);
             }
             
             if (i instanceof Listener) {
@@ -250,7 +252,7 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                             try {
                                 Bukkit.getPluginManager().disablePlugin((InjectablePlugin) i);
                             } catch (Exception e) {
-                                getInjectablePluginLoader().disablePlugin((InjectablePlugin) i);
+                                Bukkit.getPluginManager().disablePlugin((InjectablePlugin) i);
                             }
                         }
                         
@@ -322,6 +324,17 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                 
                 if (o instanceof Listener) {
                     getLogger().info(clazz.getSimpleName() + " is also a listener. this might cause problems in the future.");
+                }
+                
+                if (o instanceof InjectablePlugin) {
+                    Plugin plugin = Bukkit.getPluginManager().loadPlugin(file);
+                    
+                    if (plugin != null) {
+                        Bukkit.getPluginManager().enablePlugin(plugin);
+                    } else {
+                        getLogger().warning("Unable to load InjectablePlugin " + ((Injectable) o).getName() + " is null");
+                    }
+                    continue;
                 }
                 
                 inject(clazz);
@@ -404,11 +417,6 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
     
     private void sendMessage(CommandSender sender, String message) {
         sender.sendMessage(ChatColor.DARK_GRAY+ "[" + ChatColor.DARK_AQUA + "Injector" + ChatColor.DARK_GRAY + "] " + ChatColor.RESET + message);
-    }
-
-    @Override
-    public InjectorPluginLoader getInjectablePluginLoader() {
-        return ipl;
     }
 
     @Override

@@ -10,7 +10,6 @@ import java.io.File;
 import java.util.List;
 import java.util.logging.Logger;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginLoader;
 import org.goblom.injector.inject.Injectable;
 import org.goblom.injector.inject.Unloadable;
 
@@ -33,8 +32,6 @@ public interface InjectorAPI {
     public boolean unload(Class<? extends Unloadable> clazz);
     
     public <T extends Injectable> T getInjectable(String name);
-    
-    public InjectorPluginLoader getInjectablePluginLoader();
-    
+        
     public Plugin getBukkit();
 }

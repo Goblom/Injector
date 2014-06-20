@@ -4,9 +4,10 @@
  * All Rights Reserved unless otherwise explicitly stated.
  */
 
-package org.goblom.injector;
+package org.goblom.injector.plugin;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -19,8 +20,11 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
+import org.bukkit.Server;
 import org.bukkit.Warning;
 import org.bukkit.Warning.WarningState;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventException;
 import org.bukkit.event.EventHandler;
@@ -37,7 +41,7 @@ import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.RegisteredListener;
 import org.bukkit.plugin.TimedRegisteredListener;
 import org.bukkit.plugin.UnknownDependencyException;
-import org.bukkit.plugin.java.JavaPluginLoader;
+import org.goblom.injector.Injector;
 import org.goblom.injector.inject.InjectablePlugin;
 
 /**
@@ -46,36 +50,50 @@ import org.goblom.injector.inject.InjectablePlugin;
  */
 public class InjectorPluginLoader implements PluginLoader {
 
-    private final InjectorPlugin plugin;
-
-    private final JavaPluginLoader jpl;
-    private Map<String, ClassLoader> loaders = new LinkedHashMap();
+    private final Server server;
+    private final Pattern[] fileFilters = new Pattern[] { Pattern.compile("\\.class$"), };
+    private final Map<String, InjectorClassLoader> loaders = new LinkedHashMap();
+    private final Map<String, Class<?>> classes = new HashMap();
     
-    public InjectorPluginLoader(InjectorPlugin plugin) {
-        this.plugin = plugin;
-        this.jpl = new JavaPluginLoader(Bukkit.getServer());
+    public InjectorPluginLoader(Server server) {
+        this.server = server;
     }
     
-    public JavaPluginLoader getJavaPluginLoader() {
-        return jpl;
-    }
-    
-    @Deprecated
     @Override
     public Plugin loadPlugin(File file) throws InvalidPluginException, UnknownDependencyException {
-        return jpl.loadPlugin(file);
+        Validate.notNull(file, "File cannot be null");
+        
+        if (!file.exists()) {
+            throw new InvalidPluginException(new FileNotFoundException(file.getPath() + " does not exist"));
+        }
+        
+        final InjectorClassLoader loader;
+        
+        try {
+            loader = new InjectorClassLoader(this, getClass().getClassLoader(), file);
+            loader.initialize(loader.plugin);
+            
+        } catch (InvalidPluginException ex) {
+            throw ex;
+        } catch (Throwable ex) {
+            throw new InvalidPluginException(ex);
+        }
+        
+        Injector.getLogger().info("Successfully loaded " + loader.plugin.getName());
+        loaders.put(loader.plugin.getName(), loader);
+        
+        return loader.plugin;
     }
 
     @Deprecated
     @Override
     public PluginDescriptionFile getPluginDescription(File file) throws InvalidDescriptionException {
-        return jpl.getPluginDescription(file);
+        throw new UnsupportedOperationException("InjectorPluginLoader does not support this");
     }
 
-    @Deprecated
     @Override
     public Pattern[] getPluginFileFilters() {
-        return jpl.getPluginFileFilters();
+        return fileFilters;
     }
 
     @Override
@@ -93,14 +111,6 @@ public class InjectorPluginLoader implements PluginLoader {
             
             methods.addAll(Arrays.asList(publicMethods));
             methods.addAll(Arrays.asList(listener.getClass().getDeclaredMethods()));
-            
-//            for (Method method : publicMethods) {
-//                methods.add(method);
-//            }
-//            
-//            for (Method method : listener.getClass().getDeclaredMethods()) {
-//                methods.add(method);
-//            }
         } catch (NoClassDefFoundError e) {
             plugin.getLogger().severe("InjectablePlugin " + plugin.getDescription().getFullName() + " has failed register events for " + listener.getClass() + " because " + e.getMessage() + " does not exist.");
             return ret;
@@ -180,21 +190,21 @@ public class InjectorPluginLoader implements PluginLoader {
         Validate.isTrue(plugin instanceof InjectablePlugin, "Plugin is not associated with this PluginLoader");
         
         if (!plugin.isEnabled()) {
-            plugin.getLogger().info("Injecting plugin " + plugin.getName());
+            Injector.getLogger().info("Injecting plugin " + plugin.getName());
             
             InjectablePlugin iPlugin = (InjectablePlugin) plugin;
             
             String pluginName = iPlugin.getName();
             
             if (!loaders.containsKey(pluginName)) {
-                loaders.put(pluginName, (ClassLoader) iPlugin.getClass().getClassLoader());
+                loaders.put(pluginName, (InjectorClassLoader) iPlugin.getClass().getClassLoader());
             }
             
             try {
                 iPlugin.setEnabled(true);
             } catch (Throwable e) {
                 e.printStackTrace();
-                this.plugin.getLogger().log(Level.SEVERE, "Error while injecting " + plugin.getName());
+                Injector.getLogger().log(Level.SEVERE, "Error while injecting " + plugin.getName());
             }
             
             Bukkit.getPluginManager().callEvent(new PluginEnableEvent(plugin));
@@ -217,15 +227,64 @@ public class InjectorPluginLoader implements PluginLoader {
             try {
                 iPlugin.setEnabled(true);
             } catch (Throwable ex) {
-                this.plugin.getLogger().log(Level.SEVERE, "Error occurred while disabling " + plugin.getName());
+                Injector.getLogger().log(Level.SEVERE, "Error occurred while disabling " + plugin.getName());
             }
             
             loaders.remove(plugin.getName());
             
-            if (cLoader instanceof ClassLoader) {
-                //remove class
+            if (cLoader instanceof InjectorClassLoader) {
+                InjectorClassLoader loader = (InjectorClassLoader) cLoader;
+                Set<String> names = loader.getClasses();
+                
+                for (String name : names) {
+                    removeClass(name);
+                }
             }
         }
     }
     
+    Class<?> getClassByName(final String name) {
+        Class<?> cachedClass = classes.get(name);
+
+        if (cachedClass != null) {
+            return cachedClass;
+        } else {
+            for (String current : loaders.keySet()) {
+                InjectorClassLoader loader = loaders.get(current);
+
+                try {
+                    cachedClass = loader.findClass(name, false);
+                } catch (ClassNotFoundException cnfe) {}
+                if (cachedClass != null) {
+                    return cachedClass;
+                }
+            }
+        }
+        return null;
+    }
+    
+    void setClass(final String name, final Class<?> clazz) {
+        if (!classes.containsKey(name)) {
+            classes.put(name, clazz);
+
+            if (ConfigurationSerializable.class.isAssignableFrom(clazz)) {
+                Class<? extends ConfigurationSerializable> serializable = clazz.asSubclass(ConfigurationSerializable.class);
+                ConfigurationSerialization.registerClass(serializable);
+            }
+        }
+    }
+    
+    private void removeClass(String name) {
+        Class<?> clazz = classes.remove(name);
+
+        try {
+            if ((clazz != null) && (ConfigurationSerializable.class.isAssignableFrom(clazz))) {
+                Class<? extends ConfigurationSerializable> serializable = clazz.asSubclass(ConfigurationSerializable.class);
+                ConfigurationSerialization.unregisterClass(serializable);
+            }
+        } catch (NullPointerException ex) {
+            // Boggle!
+            // (Native methods throwing NPEs is not fun when you can't stop it before-hand)
+        }
+    }
 }

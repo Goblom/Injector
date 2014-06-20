@@ -43,10 +43,6 @@ public class Injector {
         return api.getInjected();
     }
     
-    public static InjectorPluginLoader getInjectablePluginLoader() {
-        return api.getInjectablePluginLoader();
-    }
-    
     public static boolean canInjectCommands() {
         return api.canInjectCommands();
     }
