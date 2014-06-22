@@ -19,8 +19,8 @@ import org.goblom.injector.Injector;
 public abstract class Configable extends Injectable {
     
     private FileConfiguration injectorConfig;
-    protected final File injectorConfigFile = new File(Injector.getDataFolder(), getClass().getName() + ".yml");
     private final File dataFolder = new File(Injector.getDataFolder(), getClass().getName() + "/");
+    protected final File injectorConfigFile = new File(dataFolder, "config.yml");
     
     public File getDataFolder() {
         return dataFolder;
@@ -49,6 +49,14 @@ public abstract class Configable extends Injectable {
     }
     
     public void createConfig() {
+        if (!dataFolder.exists()) {
+            try {
+                dataFolder.mkdir();
+            } catch (Exception e) {
+                Injector.getLogger().log(Level.SEVERE, "Unable to create plugin data folder at " + dataFolder + " for " + getClass().getName(), e);
+            }
+        }
+        
         if (!injectorConfigFile.exists()) {
             try {
                 injectorConfigFile.createNewFile();
