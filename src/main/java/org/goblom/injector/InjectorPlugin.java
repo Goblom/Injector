@@ -259,7 +259,7 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
     @Override
     public Injectable getInjectable(String name) {
         for (Injectable i : getInjected()) {
-            if (i.getName().equals("name")) {
+            if (i.getName().equals(name)) {
                 return i;
             }
         }
