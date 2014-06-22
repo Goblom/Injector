@@ -163,7 +163,7 @@ public class InjectorPluginLoader implements PluginLoader {
                 @Override
                 public void execute(Listener listener, Event event) throws EventException {
                     try {
-                        if (eventClass.isAssignableFrom(event.getClass())) {
+                        if (!eventClass.isAssignableFrom(event.getClass())) {
                             return;
                         }
 
