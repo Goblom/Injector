@@ -315,7 +315,15 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                         Bukkit.getPluginManager().enablePlugin(plugin);
                         
                         if (plugin instanceof Injectable) {
-                            injected.add((Injectable) plugin);
+                            Injectable inj = (Injectable) plugin;
+                            
+                            try {
+                                inj.setInjected(true);
+                            } catch (Throwable t) {
+                                t.printStackTrace();
+                            }
+                            
+                            injected.add(inj);
                         } else {
                             getLogger().warning(plugin.getName() + " was injected but not added to the list, no data will show about it in /inject [list/info]");
                         }
