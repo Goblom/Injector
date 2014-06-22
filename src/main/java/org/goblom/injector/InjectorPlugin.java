@@ -395,11 +395,11 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                         }
                         break;
                     default:
-                        sendMessage(sender, "command usage goes here");
+                        sendCommandUsage(sender);
                         break;
                 }
             } else {
-                sendMessage(sender, ChatColor.RED + "command usage goes here");
+                sendCommandUsage(sender);
             }
         } else {
             sendMessage(sender, ChatColor.RED + "You do not have permission to use that command.");
@@ -414,5 +414,11 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
     @Override
     public Plugin getBukkit() {
         return this;
+    }
+    
+    private void sendCommandUsage(CommandSender sender) {
+        sendMessage(sender, ChatColor.RED + "Usage:");
+        sendMessage(sender, ChatColor.RED + "       /inject info");
+        sendMessage(sender, ChatColor.RED + "       /inject list");
     }
 }
