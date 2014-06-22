@@ -1,3 +1,8 @@
+/*
+ * Copyright 2014 Goblom.
+ *
+ * All Rights Reserved unless otherwise explicitly stated.
+ */
 
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -5,12 +10,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.goblom.injector.factory.PluginDescriptionFactory;
 import org.goblom.injector.inject.InjectablePlugin;
-
-/*
- * Copyright 2014 Goblom.
- *
- * All Rights Reserved unless otherwise explicitly stated.
- */
 
 /**
  *
