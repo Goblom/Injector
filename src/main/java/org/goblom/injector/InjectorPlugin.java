@@ -317,6 +317,12 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                     
                     if (plugin != null) {
                         Bukkit.getPluginManager().enablePlugin(plugin);
+                        
+                        if (plugin instanceof Injectable) {
+                            injected.add((Injectable) plugin);
+                        } else {
+                            getLogger().warning(plugin.getName() + " was injected but not added to the list, no data will show about it in /inject [list/info]");
+                        }
                     } else {
                         getLogger().warning("Unable to load InjectablePlugin " + ((Injectable) o).getName() + " is null");
                     }
