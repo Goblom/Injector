@@ -19,7 +19,7 @@ public class TestPlugin extends InjectablePlugin implements Listener {
 
     @Override
     public PluginDescriptionFactory getDescriptionFactory() {
-        return PluginDescriptionFactory.of(this).withName("TestPlugin").withAuthors("Goblom").withVersion("1.0");
+        return PluginDescriptionFactory.of(this).withName("TestPlugin").withAuthors("Goblom").withVersion("1.0").withDescription("Injectors Test Plugin");
     }
     
     @Override
