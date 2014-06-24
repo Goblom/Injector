@@ -221,7 +221,6 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                     Bukkit.getPluginManager().callEvent(ue);
                     
                     if (!ue.isCancelled()) {
-                        ue.getUnloaded().onUnload();
                         i.setInjected(false);
                         
                         if (i instanceof Listener) {
