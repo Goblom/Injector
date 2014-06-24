@@ -6,7 +6,6 @@
 
 package org.goblom.injector;
 
-import org.goblom.injector.plugin.InjectorPluginLoader;
 import com.google.common.collect.Lists;
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +35,7 @@ import org.goblom.injector.inject.Injectable;
 import org.goblom.injector.inject.InjectableCommand;
 import org.goblom.injector.inject.InjectablePlugin;
 import org.goblom.injector.inject.Unloadable;
+import org.goblom.injector.plugin.InjectorPluginLoader;
 
 /**
  *
@@ -200,6 +200,8 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                         } catch (Throwable t) {
                             t.printStackTrace();
                         }
+                        injected.add(ij);
+                        return true;
                     } else return false;
                 }
             } catch (Exception e) {
