@@ -27,6 +27,7 @@
  */
 package org.goblom.injector;
 
+import com.google.common.collect.Lists;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -49,10 +50,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.zip.GZIPOutputStream;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
 
 public class Metrics {
 
@@ -332,7 +336,7 @@ public class Metrics {
         boolean onlineMode = Bukkit.getServer().getOnlineMode(); // TRUE if online mode is enabled
         String pluginVersion = description.getVersion();
         String serverVersion = Bukkit.getVersion();
-        int playersOnline = Bukkit.getServer().getOnlinePlayers().length;
+        int playersOnline = Metrics.getOnlinePlayers().size();
 
         // END server software specific section -- all code below does not use any code outside of this class / Java
 
@@ -755,5 +759,15 @@ public class Metrics {
             final Plotter plotter = (Plotter) object;
             return plotter.name.equals(name) && plotter.getValue() == getValue();
         }
+    }
+    
+    private static List<Player> getOnlinePlayers() {
+        List<Player> list = Lists.newArrayList();
+        
+        for (World world : Bukkit.getWorlds()) {
+            list.addAll(world.getPlayers());
+        }
+        
+        return Collections.unmodifiableList(list);
     }
 }
