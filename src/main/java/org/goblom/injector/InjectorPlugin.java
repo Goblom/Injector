@@ -77,12 +77,12 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
         }
 
         CommandRegistrationFactory commandFactory = CommandRegistrationFactory.buildCommand("injector");
-        commandFactory.withAliases("inject");
-        commandFactory.withCommandExecutor(this);
-        commandFactory.withPlugin(this);
-        commandFactory.withDescription("Injector Admin Command");
+                                   commandFactory.withAliases("inject");
+                                   commandFactory.withCommandExecutor(this);
+                                   commandFactory.withPlugin(this);
+                                   commandFactory.withDescription("Injector Admin Command");
 
-        commandFactory.register();
+                                   commandFactory.register();
         load();
     }
 
@@ -392,6 +392,13 @@ public class InjectorPlugin extends JavaPlugin implements InjectorAPI {
                                 case "inject":
                                 case "unload":
                                 case "disable":
+                                    if (plugin.isEnabled() && plugin.isInjected()) {
+                                        Bukkit.getPluginManager().disablePlugin(plugin);
+                                        sendMessage(sender, plugin.isEnabled() ? ChatColor.RED + "There seems to have been a problem when trying to disable the plugin." : ChatColor.GREEN + "Plugin successfully disabled!");
+                                    } else {
+                                        sendMessage(sender, ChatColor.RED + p.getName() + " is already disabled.");
+                                    }
+                                    break;
                                 default:
                                     sendMessage(sender, ChatColor.RED + "This command is currently under development");
                                     break;
